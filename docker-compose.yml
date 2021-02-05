@@ -1,0 +1,28 @@
+version: "3.6"
+
+services:
+  web:
+    build: .
+    restart: always
+    volumes:
+      - ./app:/go/src/app
+      - ./web-data:/var/lib/web-data
+      - ./web-logs:/var/lib/web-logs
+    ports:
+      - 9000:9000
+    networks:
+      - custom
+  db:
+    image: postgres:latest
+    networks:
+      - custom
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=1805
+      - POSTGRES_DB=db_matcha
+    ports:
+      - 5432:5432
+    volumes:
+      - ./postgres-data/postgres:/var/lib/postgresql/data
+networks:
+  custom:
