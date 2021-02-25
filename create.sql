@@ -45,3 +45,11 @@ CREATE TABLE connect (
         history int[],
         PRIMARY KEY (id_user)
 );
+
+CREATE TABLE user_session (
+    id_user   int      REFERENCES users NOT NULL,
+    session_key char(100) NOT NULL,
+    login_time interval NOT NULL,
+    last_seen_time time NOT NULL,
+    PRIMARY KEY (id_user)
+);

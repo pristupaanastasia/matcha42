@@ -8,9 +8,9 @@ import (
 )
 
 
-func IndexHandler(w http.ResponseWriter, r *http.Request){
-	b := []byte("Hello World")
-	w.Write(b)
+func LoginHandler(w http.ResponseWriter, r *http.Request){
+
+
 }
 
 func main() {
@@ -25,8 +25,7 @@ func main() {
 		panic(err)
 	}
 
-	http.HandleFunc("/", IndexHandler)
-
+	http.HandleFunc("/api/user/login", LoginHandler)
 	fmt.Println("Server is listening...")
 	http.ListenAndServe(":9000", nil)
 }
