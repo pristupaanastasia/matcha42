@@ -1,7 +1,7 @@
 CREATE TABLE chat (
         id_chat         SERIAL         NOT NULL,
         user_one_id         int         NOT NULL,
-        user_two_id         int         NOT NULL
+        user_two_id         int         NOT NULL,
         PRIMARY KEY (id_chat)
 );
 CREATE TABLE message (
@@ -11,21 +11,21 @@ CREATE TABLE message (
         receiver_id         int         NOT NULL,
         message         char(250)   NOT NULL,
         time         time           NOT NULL,
-        receiver_viewed int         NOT NULL
+        receiver_viewed int         NOT NULL,
         PRIMARY KEY (id_message)
 );
 
-CREATE TABLE user (
+CREATE TABLE users (
         id_user         SERIAL         NOT NULL,
         login         char(64)         NOT NULL,
         password         char(80)         NOT NULL,
         first_name   char(150)         NOT NULL,
-        last_name    char(150)         NOT NULL
+        last_name    char(150)         NOT NULL,
         PRIMARY KEY (id_user)
 );
 
-CREATE TABLE prifile (
-        id_user   int      REFERENCES user NOT NULL,
+CREATE TABLE profile (
+        id_user   int      REFERENCES users NOT NULL,
         age         int,
         image         char(150)[] ,
         description   char(400) ,
@@ -33,15 +33,15 @@ CREATE TABLE prifile (
         tags char(50)[],
         gps char(150) NOT NULL,
         fame_rating int NOT NULL,
-        online int
+        online int,
         PRIMARY KEY (id_user)
 );
 CREATE TABLE connect (
-        id_user   int      REFERENCES user NOT NULL,
+        id_user   int      REFERENCES users NOT NULL,
         like_user int[],
         liked int[],
         block int[],
         blocked int[],
-        history int[]
+        history int[],
         PRIMARY KEY (id_user)
 );
