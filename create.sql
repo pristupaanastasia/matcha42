@@ -1,11 +1,13 @@
+
 CREATE TABLE chat (
-        id_chat         SERIAL         NOT NULL,
+        id_chat         char(50)         NOT NULL,
         user_one_id         int         NOT NULL,
         user_two_id         int         NOT NULL,
         PRIMARY KEY (id_chat)
 );
+
 CREATE TABLE message (
-        id_chat       int  REFERENCES chat NOT NULL,
+        id_chat       char(50)  REFERENCES chat NOT NULL,
         id_message    SERIAL         NOT NULL,
         sender_id         int         NOT NULL,
         receiver_id         int         NOT NULL,
@@ -16,7 +18,7 @@ CREATE TABLE message (
 );
 
 CREATE TABLE users (
-        id_user         SERIAL         NOT NULL,
+        id_user         char(50)         NOT NULL,
         login         char(64)         NOT NULL,
         password         char(80)         NOT NULL,
         first_name   char(150)         NOT NULL,
@@ -25,31 +27,67 @@ CREATE TABLE users (
 );
 
 CREATE TABLE profile (
-        id_user   int      REFERENCES users NOT NULL,
+        id_user  char(50)     NOT NULL,
         age         int,
-        image         char(150)[] ,
+        gender      boolean NOT NULL ,
         description   char(400) ,
         sex    int NOT NULL,
-        tags char(50)[],
         gps char(150) NOT NULL,
         fame_rating int NOT NULL,
-        online int,
-        PRIMARY KEY (id_user)
+        online boolean,
+        FOREIGN KEY (id_user) REFERENCES users (id_user) ON DELETE CASCADE
 );
-CREATE TABLE connect (
-        id_user   int      REFERENCES users NOT NULL,
-        like_user int[],
-        liked int[],
-        block int[],
-        blocked int[],
-        history int[],
-        PRIMARY KEY (id_user)
+
+CREATE TABLE image (
+    id_user  char(50)     NOT NULL,
+    main_image char(150) NOT NULL,
+    image_two char(150) ,
+    image_tree char(150) ,
+    image_four char(150) ,
+    image_five char(150) ,
+    FOREIGN KEY (id_user) REFERENCES users (id_user) ON DELETE CASCADE
+);
+
+
+CREATE TABLE block (
+    id SERIAL NOT NULL,
+    user_one_id char(50) REFERENCES users (id_user),
+    user_two_id char(50) REFERENCES users (id_user),
+    PRIMARY KEY (id)
+);
+
+CREATE TABLE like_user (
+    id SERIAL NOT NULL,
+    user_one_id char(50) REFERENCES users (id_user),
+    user_two_id char(50) REFERENCES users (id_user),
+    PRIMARY KEY (id)
+);
+
+CREATE TABLE history (
+    id SERIAL NOT NULL,
+    user_one_id char(50) REFERENCES users (id_user),
+    user_two_id char(50) REFERENCES users (id_user),
+    PRIMARY KEY (id)
 );
 
 CREATE TABLE user_session (
-    id_user   int      REFERENCES users NOT NULL,
+    id_user   char(50)      REFERENCES users NOT NULL,
     session_key char(100) NOT NULL,
     login_time interval NOT NULL,
     last_seen_time time NOT NULL,
     PRIMARY KEY (id_user)
+);
+
+CREATE TABLE tag_and_profile (
+    id SERIAL NOT NULL,
+    id_user char(50) REFERENCES users NOT NULL,
+    id_tag int REFERENCES tag NOT NULL,
+    PRIMARY KEY (id)
+);
+
+
+CREATE TABLE tag (
+    id_tag SERIAL NOT NULL,
+    tag_name char(50) NOT NULL,
+    PRIMARY KEY (id_tag)
 );
