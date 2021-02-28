@@ -24,6 +24,7 @@ CREATE TABLE users (
         password         char(80)         NOT NULL,
         first_name   char(150)         NOT NULL,
         last_name    char(150)         NOT NULL,
+        verif         boolean,
         PRIMARY KEY (id_user)
 );
 

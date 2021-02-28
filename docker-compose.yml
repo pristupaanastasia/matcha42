@@ -12,6 +12,7 @@ services:
       - 9000:9000
     networks:
       - custom
+
   db:
     image: postgres:latest
     user: postgres
