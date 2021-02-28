@@ -3,25 +3,21 @@ package main
 import (
 	"database/sql"
 	"fmt"
+	"github.com/google/uuid"
+	_ "github.com/google/uuid"
 	_ "github.com/lib/pq"
+	"golang.org/x/net/context"
 	"log"
 	"net/http"
-	"time"
 )
+var database *sql.DB
 
-/*type indexHandler struct {
-	mu sync.Mutex // guards n
-	n  int
-}
-*/
 func loginHandler(next http.Handler) http.Handler{
 	fn := func(w http.ResponseWriter, r *http.Request) {
-		t1 := time.Now()
-		next.ServeHTTP(w, r)
-		t2 := time.Now()
-		log.Printf("[%s] %q %v\n", r.Method, r.URL.String(), t2.Sub(t1))
-	}
 
+		//authToken := r.Header().Get("Authorization")
+		next.ServeHTTP(w, r)
+	}
 	return http.HandlerFunc(fn)
 }
 func recoverHandler(next http.Handler) http.Handler {
@@ -35,29 +31,55 @@ func recoverHandler(next http.Handler) http.Handler {
 
 		next.ServeHTTP(w, r)
 	}
-
 	return http.HandlerFunc(fn)
 }
-/*func (h *indexHandler) ServeHTTP(w http.ResponseWriter, r *http.Request){
-	h.mu.Lock()
-	defer h.mu.Unlock()
-	h.n++
-	fmt.Fprintf(w, "Welcome!")
-}*/
 
-func registrHandler(w http.ResponseWriter, r *http.Request){
-	c := http.Cookie{
-		Name:   "ithinkidroppedacookie",
-		Value:  "thedroppedcookiehasgoldinit",
-		MaxAge: 3600}
-	http.SetCookie(w, &c)
+func verifEmail(w http.ResponseWriter, r *http.Request){
+	fmt.Println("yes!",r.Context().Value("email").(string))
 
-	w.Write([]byte("new cookie created!\n"))
+}
+
+func registrHandler(next http.Handler) http.Handler{
+	fn := func(w http.ResponseWriter, r *http.Request){
+	if r.Method == "POST" {
+		r.ParseForm()
+		login := r.FormValue("login")
+		email := r.FormValue("email")
+		pass := r.FormValue("password")
+		first_name := r.FormValue("first_name")
+		last_name := r.FormValue("last_name")
+		id := uuid.New().String()
+
+
+		ctx := context.WithValue(
+			r.Context(), "email", email)
+		ctx = context.WithValue(
+			r.Context(), "login", login)
+		ctx = context.WithValue(
+			r.Context(), "pass", pass)
+		ctx = context.WithValue(
+			r.Context(), "first", first_name)
+		ctx = context.WithValue(
+			r.Context(), "last", last_name)
+		r = r.WithContext(ctx)
+		next.ServeHTTP(w, r)
+		fmt.Fprint(w, login, pass, first_name, last_name,id,"|",len(id),"|")
+		/*_, err := database.Exec("insert into users (id_user, login, email,password, first_name, last_name) values ($1, $2, $3,$4,$5,$6) ",
+			id, login, email,pass,first_name,last_name)
+		if err != nil {
+			fmt.Println("error database",err)
+			return
+		}*/
+	}else{
+		http.ServeFile(w, r, "auth/view/registr.html")
+		}
+	}
+	return http.HandlerFunc(fn)
 }
 
 func indexHandler(w http.ResponseWriter, r *http.Request){
 
-	fmt.Fprintf(w, "Welcome!")
+	http.ServeFile(w, r, "auth/view/registr.html")
 }
 func main() {
 
@@ -71,7 +93,12 @@ func main() {
 		panic(err)
 	}
 
+	database = db
+	defer db.Close()
+
+	http.Handle("/registr", recoverHandler(registrHandler(http.HandlerFunc(verifEmail))))
 	http.Handle("/", loginHandler(recoverHandler(http.HandlerFunc(indexHandler))))
 	fmt.Println("Server is listening...")
 	http.ListenAndServe(":9000", nil)
+
 }

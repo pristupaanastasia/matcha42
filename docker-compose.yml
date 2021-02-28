@@ -14,6 +14,7 @@ services:
       - custom
   db:
     image: postgres:latest
+    user: postgres
     networks:
       - custom
     environment:

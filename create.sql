@@ -19,6 +19,7 @@ CREATE TABLE message (
 
 CREATE TABLE users (
         id_user         char(50)         NOT NULL,
+        email         char(60)         NOT NULL,
         login         char(64)         NOT NULL,
         password         char(80)         NOT NULL,
         first_name   char(150)         NOT NULL,
