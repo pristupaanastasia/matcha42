@@ -74,7 +74,7 @@ CREATE TABLE history (
 
 CREATE TABLE user_session (
     id_user   char(50)      REFERENCES users NOT NULL,
-    session_key char(100) NOT NULL,
+    session_key char(300) NOT NULL,
     login_time interval NOT NULL,
     last_seen_time time NOT NULL,
     PRIMARY KEY (id_user)

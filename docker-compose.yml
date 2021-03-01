@@ -26,5 +26,6 @@ services:
       - 5432:5432
     volumes:
       - ./postgres-data/postgres:/var/lib/postgresql/data
+
 networks:
   custom:
