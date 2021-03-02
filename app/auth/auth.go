@@ -1,10 +1,13 @@
 package auth
 
 import (
+	"github.com/pristupaanastasia/matcha42/model"
 	"crypto/rand"
 	"crypto/rsa"
-	"crypto/x509"
-	"database/sql"
+
+	"github.com/pristupaanastasia/matcha42/token"
+	//"crypto/x509"
+	_ "database/sql"
 	"fmt"
 	"github.com/dgrijalva/jwt-go"
 	"github.com/google/uuid"
@@ -12,9 +15,6 @@ import (
 	"net/http"
 	"time"
 )
-var Database *sql.DB
-var Server string = "http://localhost:9000"
-
 
 
 type SmtpServer struct {
@@ -22,10 +22,7 @@ type SmtpServer struct {
 	port string
 }
 
-type Claims struct {
-	Username string `json:"username"`
-	jwt.StandardClaims
-}
+
 type Credentials struct {
 	Password string `json:"password"`
 	Username string `json:"username"`
@@ -41,16 +38,46 @@ func (mail *Mail) BuildMessage() string {
 
 	return message
 }
-type Token struct{
-	Id   string
-	Key string
-	LoginTime time.Duration
-	LastSeen time.Time
-}
 
-func VerifHandler(w http.ResponseWriter, r *http.Request){
+
+func VerifyHandler(w http.ResponseWriter, r *http.Request){
+	var tokenGet token.Token
+	var user model.User
+
 	tokenString :=r.URL.Query().Get("token")
-	claims := jwt.MapClaims{}
+	id :=r.URL.Query().Get("id")
+	rowUser := model.Database.QueryRow("select * from users where id_user = $1",id )
+	erro := rowUser.Scan(&user.Id, &user.Email, &user.Login, &user.Password,
+		&user.FirstName,&user.LastName,&user.Verify)
+	if erro != nil{
+		fmt.Println("error tocken")
+		return
+	}
+	if &user == nil{
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+	row := model.Database.QueryRow("select * from user_session where id_user = $1",id )
+	err := row.Scan(&tokenGet.Id, &tokenGet.Key, &tokenGet.LoginTime, &tokenGet.LastSeen)
+	if err != nil{
+		fmt.Println("error tocken")
+		return
+	}
+	if tokenGet.Key != tokenString{
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+	_,error := model.Database.Exec("insert into  user_session (verify) where id_user = $1 value true",user.Id)
+	if error != nil{
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+	tokenRefresh, erno := token.CreateTokenRefresh(user)
+	if erno != nil{
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+	/*claims := jwt.MapClaims{}
 	var token Token
 	id :=
 	row := Database.QueryRow("select * from user_session where id_user = $1", )
@@ -63,27 +90,33 @@ func VerifHandler(w http.ResponseWriter, r *http.Request){
 	tokenk, _ := jwt.ParseWithClaims(tokenString, claims, func(tokenk *jwt.Token) (interface{}, error) {
 		return []byte(token.Key), nil
 	})
-	fmt.Println(token)
+	fmt.Println(token)*/
+	http.SetCookie(w, &http.Cookie{
+		Name:    "token",
+		Value:   tokenRefresh,
+	})
+	w.WriteHeader(http.StatusOK)
 
 }
-func RegistrHandler(w http.ResponseWriter, r *http.Request){
+func RegistrationHandler(w http.ResponseWriter, r *http.Request){
 
 	if r.Method == "POST" {
+		var user model.User
 		r.ParseForm()
-		login := r.FormValue("login")
-		email := r.FormValue("email")
-		pass := r.FormValue("password")
-		firstname := r.FormValue("first_name")
-		lastname := r.FormValue("last_name")
-		id := uuid.New().String()
+		user.Login = r.FormValue("login")
+		user.Email = r.FormValue("email")
+		user.Password = r.FormValue("password")
+		user.FirstName = r.FormValue("first_name")
+		user.LastName = r.FormValue("last_name")
+		user.Id = uuid.New().String()
 		var secretKey, error = rsa.GenerateKey(rand.Reader, 1024)
 		if error != nil {
 			log.Println(error)
 		}
 
 		token := jwt.NewWithClaims(jwt.SigningMethodRS256,jwt.MapClaims{
-			"email":email,
-			"id":id,
+			"email":user.Email,
+			"id":user.Id,
 			"exp":time.Now().Add(time.Hour).Unix(),
 		})
 
@@ -93,7 +126,7 @@ func RegistrHandler(w http.ResponseWriter, r *http.Request){
 			return
 		}
 		fmt.Println(tokenString)
-		verifEmail(tokenString, email,firstname)
+		verifyEmail(tokenString, user.Email,user.Id)
 
 		//ctx := context.WithValue(
 		//	r.Context(), "email", email)
@@ -104,21 +137,23 @@ func RegistrHandler(w http.ResponseWriter, r *http.Request){
 			Value:   tokenString,
 		})*/
 
-		fmt.Fprint(w, login, pass, firstname, lastname,id,"|",len(id),"|")
-		_, err := Database.Exec("insert into users (id_user, login, email,password, first_name, last_name,verif) values ($1, $2, $3,$4,$5,$6, false) ",
-			id, login, email,pass,firstname,lastname)
+		fmt.Fprint(w, user.Login, user.Password, user.FirstName, user.LastName,user.Id,"|",len(user.Id),"|")
+		_, err := model.Database.Exec("insert into users (id_user, login, email,password, first_name, last_name,verif) values ($1, $2, $3,$4,$5,$6, false) ",
+			user.Id, user.Login, user.Email,user.Password,user.FirstName,user.LastName)
 		if err != nil {
 			fmt.Println("error database",err)
 			return
 		}
-		bytes, _ := x509.MarshalPKIXPublicKey(&secretKey.PublicKey)
+	//	bytes, _ := x509.MarshalPKIXPublicKey(&secretKey.PublicKey)
 
-		_,erl := Database.Exec("insert into user_session (id_user, session_key, login_time, last_seen_time) values($1, $2, $3,$4)", id, bytes,time.Hour ,time.Now())
+		_,erl := model.Database.Exec("insert into user_session (id_user, session_key, login_time, last_seen_time) values($1, $2, $3,$4)", user.Id, tokenString,time.Hour ,time.Now())
 		if erl != nil {
 			fmt.Println("error database",err)
 			return
 		}
 		w.WriteHeader(http.StatusOK)
+		//тут еще будет страничка что письмо пришло на почту
+
 
 	}else{
 		http.ServeFile(w, r, "auth/view/registr.html")

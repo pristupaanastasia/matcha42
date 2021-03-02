@@ -1,6 +1,7 @@
 package auth
 
 import (
+	"../model"
 	"crypto/tls"
 	"fmt"
 	"log"
@@ -13,7 +14,7 @@ type Mail struct {
 	body     string
 }
 
-func verifEmail(token string,email string,first_name string){
+func verifyEmail(token string,email string,id string){
 	// Set up authentication information.
 	/*from := "gypsy_camp@mail.ru"
 
@@ -32,11 +33,11 @@ func verifEmail(token string,email string,first_name string){
 	mail.senderId = "anastasiapristupa1998181805@gmail.com"
 	mail.toIds = email
 	mail.subject = "This is the email subject"
-	mail.body = " "+ Server +"/verif?token=" + token +  " "
+	mail.body = " "+ model.Server +"/verif?token=" + token +  "&id=" + id + " "
 	messageBody := mail.BuildMessage()
 
 	smtpServer := SmtpServer{host: "smtp.gmail.com", port: "465"}
-	auth := smtp.PlainAuth("", mail.senderId, "83&U4@bg5%FZ", smtpServer.host)
+	auth := smtp.PlainAuth("", mail.senderId, "8", smtpServer.host)
 	tlsconfig := &tls.Config{
 		InsecureSkipVerify: true,
 		ServerName:         smtpServer.host,

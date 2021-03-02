@@ -1,4 +1,4 @@
-module github.com/pristupaanastasia/matcha42/tree/main/app
+module github.com/pristupaanastasia/matcha42/app
 
 go 1.15
 
