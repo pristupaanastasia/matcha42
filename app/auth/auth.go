@@ -1,11 +1,12 @@
 package auth
 
 import (
-	"github.com/pristupaanastasia/matcha42/model"
+	"github.com/pristupaanastasia/matcha42/app/model"
 	"crypto/rand"
 	"crypto/rsa"
+	"strings"
 
-	"github.com/pristupaanastasia/matcha42/token"
+	"github.com/pristupaanastasia/matcha42/app/token"
 	//"crypto/x509"
 	_ "database/sql"
 	"fmt"
@@ -46,11 +47,13 @@ func VerifyHandler(w http.ResponseWriter, r *http.Request){
 
 	tokenString :=r.URL.Query().Get("token")
 	id :=r.URL.Query().Get("id")
+	fmt.Println(id)
+	fmt.Println(tokenString)
 	rowUser := model.Database.QueryRow("select * from users where id_user = $1",id )
 	erro := rowUser.Scan(&user.Id, &user.Email, &user.Login, &user.Password,
 		&user.FirstName,&user.LastName,&user.Verify)
 	if erro != nil{
-		fmt.Println("error tocken")
+		fmt.Println("error tocken user",erro)
 		return
 	}
 	if &user == nil{
@@ -60,21 +63,26 @@ func VerifyHandler(w http.ResponseWriter, r *http.Request){
 	row := model.Database.QueryRow("select * from user_session where id_user = $1",id )
 	err := row.Scan(&tokenGet.Id, &tokenGet.Key, &tokenGet.LoginTime, &tokenGet.LastSeen)
 	if err != nil{
-		fmt.Println("error tocken")
+		fmt.Println("error tocken tocken", err)
 		return
 	}
-	if tokenGet.Key != tokenString{
+	if strings.TrimSpace(tokenGet.Key) != strings.TrimSpace(tokenString){
 		w.WriteHeader(http.StatusInternalServerError)
+		fmt.Println("tokenGet.Key != tokenString")
+		fmt.Println(tokenString+"|")
+		fmt.Println(tokenGet.Key+"|")
 		return
 	}
-	_,error := model.Database.Exec("insert into  user_session (verify) where id_user = $1 value true",user.Id)
+	_,error := model.Database.Exec("update users set verify = true where id_user = $1",user.Id)
 	if error != nil{
 		w.WriteHeader(http.StatusInternalServerError)
+		fmt.Println("model.Database.Exec",error)
 		return
 	}
 	tokenRefresh, erno := token.CreateTokenRefresh(user)
 	if erno != nil{
 		w.WriteHeader(http.StatusInternalServerError)
+		fmt.Println("token.CreateTokenRefresh",erno)
 		return
 	}
 	/*claims := jwt.MapClaims{}
@@ -138,17 +146,17 @@ func RegistrationHandler(w http.ResponseWriter, r *http.Request){
 		})*/
 
 		fmt.Fprint(w, user.Login, user.Password, user.FirstName, user.LastName,user.Id,"|",len(user.Id),"|")
-		_, err := model.Database.Exec("insert into users (id_user, login, email,password, first_name, last_name,verif) values ($1, $2, $3,$4,$5,$6, false) ",
+		_, err := model.Database.Exec("insert into users (id_user, login, email,password, first_name, last_name,verify) values ($1, $2, $3,$4,$5,$6, false) ",
 			user.Id, user.Login, user.Email,user.Password,user.FirstName,user.LastName)
 		if err != nil {
-			fmt.Println("error database",err)
+			fmt.Println("error database user",err)
 			return
 		}
 	//	bytes, _ := x509.MarshalPKIXPublicKey(&secretKey.PublicKey)
 
-		_,erl := model.Database.Exec("insert into user_session (id_user, session_key, login_time, last_seen_time) values($1, $2, $3,$4)", user.Id, tokenString,time.Hour ,time.Now())
+		_,erl := model.Database.Exec("insert into user_session (id_user, session_key, login_time, last_seen_time) values($1, $2, $3,$4)", user.Id, tokenString,time.Now().Add(time.Minute * 30)  ,time.Now())
 		if erl != nil {
-			fmt.Println("error database",err)
+			fmt.Println("error database token",err)
 			return
 		}
 		w.WriteHeader(http.StatusOK)

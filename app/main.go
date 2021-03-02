@@ -7,7 +7,8 @@ import (
 	"log"
 	"net/http"
 
-	"./auth"
+	"github.com/pristupaanastasia/matcha42/app/auth"
+	"github.com/pristupaanastasia/matcha42/app/model"
 )
 
 
@@ -57,12 +58,12 @@ func main() {
 		panic(err)
 	}
 
-	auth.Database = db
+	model.Database = db
 	defer db.Close()
 
-	http.Handle("/registr", recoverHandler(http.HandlerFunc(auth.RegistrHandler)))
+	http.Handle("/registr", recoverHandler(http.HandlerFunc(auth.RegistrationHandler)))
 	http.Handle("/", loginHandler(recoverHandler(http.HandlerFunc(indexHandler))))
-	http.Handle("/verif", loginHandler(recoverHandler(http.HandlerFunc(auth.VerifHandler))))
+	http.Handle("/verify", loginHandler(recoverHandler(http.HandlerFunc(auth.VerifyHandler))))
 	fmt.Println("Server is listening...")
 	http.ListenAndServe(":9000",nil)
 

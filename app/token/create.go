@@ -1,9 +1,9 @@
 package token
 
 import (
+	"github.com/pristupaanastasia/matcha42/app/model"
 	"crypto/rand"
 	"crypto/rsa"
-	"github.com/pristupaanastasia/matcha42/model"
 	//"database/sql"
 	"github.com/dgrijalva/jwt-go"
 	"log"
@@ -13,7 +13,7 @@ import (
 type Token struct{
 	Id   string
 	Key string
-	LoginTime time.Duration
+	LoginTime time.Time
 	LastSeen time.Time
 }
 func CreateTokenRefresh(user model.User) (string, error){

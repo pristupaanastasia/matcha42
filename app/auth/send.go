@@ -1,7 +1,7 @@
 package auth
 
 import (
-	"../model"
+	"github.com/pristupaanastasia/matcha42/app/model"
 	"crypto/tls"
 	"fmt"
 	"log"
@@ -33,11 +33,13 @@ func verifyEmail(token string,email string,id string){
 	mail.senderId = "anastasiapristupa1998181805@gmail.com"
 	mail.toIds = email
 	mail.subject = "This is the email subject"
-	mail.body = " "+ model.Server +"/verif?token=" + token +  "&id=" + id + " "
+	mail.body = " "+ model.Server +"/verify?token=" + token +  "&id=" + id + " "
 	messageBody := mail.BuildMessage()
 
+	fmt.Println("mail id: ", id)
+	fmt.Println("mail t: ", token)
 	smtpServer := SmtpServer{host: "smtp.gmail.com", port: "465"}
-	auth := smtp.PlainAuth("", mail.senderId, "8", smtpServer.host)
+	auth := smtp.PlainAuth("", mail.senderId, "", smtpServer.host)
 	tlsconfig := &tls.Config{
 		InsecureSkipVerify: true,
 		ServerName:         smtpServer.host,

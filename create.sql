@@ -24,7 +24,7 @@ CREATE TABLE users (
         password         char(80)         NOT NULL,
         first_name   char(150)         NOT NULL,
         last_name    char(150)         NOT NULL,
-        verif         boolean,
+        verify         boolean,
         PRIMARY KEY (id_user)
 );
 
@@ -74,8 +74,8 @@ CREATE TABLE history (
 
 CREATE TABLE user_session (
     id_user   char(50)      REFERENCES users NOT NULL,
-    session_key char(300) NOT NULL,
-    login_time interval NOT NULL,
+    session_key char(500) NOT NULL,
+    login_time time NOT NULL,
     last_seen_time time NOT NULL,
     PRIMARY KEY (id_user)
 );
