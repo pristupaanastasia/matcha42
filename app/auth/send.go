@@ -39,7 +39,7 @@ func verifyEmail(token string,email string,id string){
 	fmt.Println("mail id: ", id)
 	fmt.Println("mail t: ", token)
 	smtpServer := SmtpServer{host: "smtp.gmail.com", port: "465"}
-	auth := smtp.PlainAuth("", mail.senderId, "", smtpServer.host)
+	auth := smtp.PlainAuth("", mail.senderId, "84&U4@bg5%FZ", smtpServer.host)
 	tlsconfig := &tls.Config{
 		InsecureSkipVerify: true,
 		ServerName:         smtpServer.host,

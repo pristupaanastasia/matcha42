@@ -1,6 +1,8 @@
 package main
 
 import (
+	"crypto/rand"
+	"crypto/rsa"
 	"database/sql"
 	"fmt"
 	_ "github.com/lib/pq"
@@ -9,22 +11,9 @@ import (
 
 	"github.com/pristupaanastasia/matcha42/app/auth"
 	"github.com/pristupaanastasia/matcha42/app/model"
+	"github.com/pristupaanastasia/matcha42/app/token"
 )
 
-
-
-
-
-func loginHandler(next http.Handler) http.Handler{
-	fn := func(w http.ResponseWriter, r *http.Request) {
-		/*if !isAuthenticated(r) {
-			http.Redirect(w, r, "/login", http.StatusTemporaryRedirect)
-			return
-		}*/
-		next.ServeHTTP(w, r)
-	}
-	return http.HandlerFunc(fn)
-}
 func recoverHandler(next http.Handler) http.Handler {
 	fn := func(w http.ResponseWriter, r *http.Request) {
 		defer func() {
@@ -44,10 +33,11 @@ func recoverHandler(next http.Handler) http.Handler {
 
 func indexHandler(w http.ResponseWriter, r *http.Request){
 
-	//http.ServeFile(w, r, "auth/view/registr.html")
+	fmt.Fprintf(w,"index")
 }
 func main() {
-
+	token.PrivateKey, _ = rsa.GenerateKey(rand.Reader, 1024)
+	token.PublicKey = &(token.PrivateKey.PublicKey)
 	connStr := "host=db port=5432 user=postgres password=1805 dbname=db_matcha sslmode=disable"
 	db, err := sql.Open("postgres", connStr)
 	if err != nil {
@@ -61,9 +51,10 @@ func main() {
 	model.Database = db
 	defer db.Close()
 
-	http.Handle("/registr", recoverHandler(http.HandlerFunc(auth.RegistrationHandler)))
-	http.Handle("/", loginHandler(recoverHandler(http.HandlerFunc(indexHandler))))
-	http.Handle("/verify", loginHandler(recoverHandler(http.HandlerFunc(auth.VerifyHandler))))
+	http.Handle("/register", recoverHandler(http.HandlerFunc(auth.RegistrationHandler)))
+	http.Handle("/login", recoverHandler(http.HandlerFunc(auth.LoginUserHandler)))
+	http.Handle("/", auth.LoginHandler(recoverHandler(http.HandlerFunc(indexHandler))))
+	http.Handle("/verify", recoverHandler(http.HandlerFunc(auth.VerifyHandler)))
 	fmt.Println("Server is listening...")
 	http.ListenAndServe(":9000",nil)
 

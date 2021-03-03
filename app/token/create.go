@@ -2,11 +2,11 @@ package token
 
 import (
 	"github.com/pristupaanastasia/matcha42/app/model"
-	"crypto/rand"
+	//"crypto/rand"
 	"crypto/rsa"
 	//"database/sql"
 	"github.com/dgrijalva/jwt-go"
-	"log"
+	//"log"
 	//"net/http"
 	"time"
 )
@@ -16,18 +16,22 @@ type Token struct{
 	LoginTime time.Time
 	LastSeen time.Time
 }
+type Claims struct {
+	Username string `json:"username"`
+	jwt.StandardClaims
+}
+var PrivateKey    *rsa.PrivateKey
+var PublicKey    *rsa.PublicKey
 func CreateTokenRefresh(user model.User) (string, error){
-	var secretKey, error = rsa.GenerateKey(rand.Reader, 1024)
-	if error != nil {
-		log.Println(error)
-	}
+
+
 
 	token := jwt.NewWithClaims(jwt.SigningMethodRS256,jwt.MapClaims{
 		"login":user.Login,
 		"exp":time.Now().Add(time.Minute * 5).Unix(),
 	})
 
-	tokenString, erro:= token.SignedString(secretKey)
+	tokenString, erro:= token.SignedString(PrivateKey)
 	if erro != nil {
 
 		return "",erro

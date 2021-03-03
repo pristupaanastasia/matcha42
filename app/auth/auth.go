@@ -2,8 +2,8 @@ package auth
 
 import (
 	"github.com/pristupaanastasia/matcha42/app/model"
-	"crypto/rand"
-	"crypto/rsa"
+	//"crypto/rand"
+	//"crypto/rsa"
 	"strings"
 
 	"github.com/pristupaanastasia/matcha42/app/token"
@@ -12,7 +12,7 @@ import (
 	"fmt"
 	"github.com/dgrijalva/jwt-go"
 	"github.com/google/uuid"
-	"log"
+	//"log"
 	"net/http"
 	"time"
 )
@@ -85,25 +85,15 @@ func VerifyHandler(w http.ResponseWriter, r *http.Request){
 		fmt.Println("token.CreateTokenRefresh",erno)
 		return
 	}
-	/*claims := jwt.MapClaims{}
-	var token Token
-	id :=
-	row := Database.QueryRow("select * from user_session where id_user = $1", )
-	err := row.Scan(&token.Id, &token.Key, &token.LoginTime, &token.LastSeen)
-	if err != nil{
-		fmt.Println("error tocken")
-		return
-	}
-	//publicKey,_ := x509.ParsePKCS1PublicKey([]byte(token.Key))
-	tokenk, _ := jwt.ParseWithClaims(tokenString, claims, func(tokenk *jwt.Token) (interface{}, error) {
-		return []byte(token.Key), nil
-	})
-	fmt.Println(token)*/
+
 	http.SetCookie(w, &http.Cookie{
 		Name:    "token",
 		Value:   tokenRefresh,
+		Path:    "/",
 	})
+
 	w.WriteHeader(http.StatusOK)
+	http.Redirect(w, r, "/login", http.StatusSeeOther)
 
 }
 func RegistrationHandler(w http.ResponseWriter, r *http.Request){
@@ -117,18 +107,15 @@ func RegistrationHandler(w http.ResponseWriter, r *http.Request){
 		user.FirstName = r.FormValue("first_name")
 		user.LastName = r.FormValue("last_name")
 		user.Id = uuid.New().String()
-		var secretKey, error = rsa.GenerateKey(rand.Reader, 1024)
-		if error != nil {
-			log.Println(error)
-		}
 
-		token := jwt.NewWithClaims(jwt.SigningMethodRS256,jwt.MapClaims{
+
+		tokenS := jwt.NewWithClaims(jwt.SigningMethodRS256,jwt.MapClaims{
 			"email":user.Email,
 			"id":user.Id,
 			"exp":time.Now().Add(time.Hour).Unix(),
 		})
 
-		tokenString, erro:= token.SignedString(secretKey)
+		tokenString, erro:= tokenS.SignedString(token.PrivateKey)
 		if erro != nil {
 			w.WriteHeader(http.StatusInternalServerError)
 			return
@@ -160,11 +147,12 @@ func RegistrationHandler(w http.ResponseWriter, r *http.Request){
 			return
 		}
 		w.WriteHeader(http.StatusOK)
+		//http.Redirect(w, r, model.Server + "/", http.StatusSeeOther)
 		//тут еще будет страничка что письмо пришло на почту
 
 
 	}else{
-		http.ServeFile(w, r, "auth/view/registr.html")
+		http.ServeFile(w, r, "auth/view/register.html")
 	}
 
 }
