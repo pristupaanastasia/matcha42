@@ -12,7 +12,21 @@ services:
       - 9000:9000
     networks:
       - custom
-
+  frontend:
+    build: ./front
+    environment:
+      DOCKER: "true"
+    volumes:
+      - .:/go/src/front
+      - /var/www/app/node_modules
+    ports:
+      - "8080:8080"
+    restart: always
+    links:
+      - web
+    networks:
+      - custom
+    command: "npm run serve"
   db:
     image: postgres:latest
     user: postgres

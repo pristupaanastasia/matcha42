@@ -53,8 +53,8 @@ func main() {
 
 	http.Handle("/register", recoverHandler(http.HandlerFunc(auth.RegistrationHandler)))
 	http.Handle("/login", recoverHandler(http.HandlerFunc(auth.LoginUserHandler)))
-	http.Handle("/", auth.LoginHandler(recoverHandler(http.HandlerFunc(indexHandler))))
 	http.Handle("/verify", recoverHandler(http.HandlerFunc(auth.VerifyHandler)))
+	http.Handle("/", auth.LoginHandler(recoverHandler(http.HandlerFunc(indexHandler))))
 	fmt.Println("Server is listening...")
 	http.ListenAndServe(":9000",nil)
 
