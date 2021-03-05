@@ -32,9 +32,12 @@ func verifyEmail(token string,email string,id string){
 	mail := Mail{}
 	mail.senderId = "anastasiapristupa1998181805@gmail.com"
 	mail.toIds = email
+	fmt.Println("mail!!!!!" , mail.toIds)
 	mail.subject = "This is the email subject"
 	mail.body = " "+ model.Server +"/verify?token=" + token +  "&id=" + id + " "
+	fmt.Println(mail.body)
 	messageBody := mail.BuildMessage()
+	fmt.Println(messageBody)
 
 	fmt.Println("mail id: ", id)
 	fmt.Println("mail t: ", token)

@@ -9,7 +9,7 @@ services:
       - ./web-data:/var/lib/web-data
       - ./web-logs:/var/lib/web-logs
     ports:
-      - 9000:9000
+      - "9000:9000"
     networks:
       - custom
   frontend:
@@ -19,14 +19,16 @@ services:
     volumes:
       - .:/go/src/front
       - /var/www/app/node_modules
-    ports:
-      - "8080:8080"
     restart: always
     links:
       - web
+    ports:
+      - "8080:8080"
     networks:
       - custom
     command: "npm run serve"
+
+
   db:
     image: postgres:latest
     user: postgres
@@ -43,3 +45,4 @@ services:
 
 networks:
   custom:
+    driver: bridge

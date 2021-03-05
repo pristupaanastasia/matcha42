@@ -6,12 +6,13 @@ import (
 	"database/sql"
 	"fmt"
 	_ "github.com/lib/pq"
-	"log"
-	"net/http"
-
+	"github.com/gorilla/mux"
 	"github.com/pristupaanastasia/matcha42/app/auth"
 	"github.com/pristupaanastasia/matcha42/app/model"
 	"github.com/pristupaanastasia/matcha42/app/token"
+	"github.com/rs/cors"
+	"log"
+	"net/http"
 )
 
 func recoverHandler(next http.Handler) http.Handler {
@@ -36,6 +37,7 @@ func indexHandler(w http.ResponseWriter, r *http.Request){
 	fmt.Fprintf(w,"index")
 }
 func main() {
+
 	token.PrivateKey, _ = rsa.GenerateKey(rand.Reader, 1024)
 	token.PublicKey = &(token.PrivateKey.PublicKey)
 	connStr := "host=db port=5432 user=postgres password=1805 dbname=db_matcha sslmode=disable"
@@ -50,13 +52,31 @@ func main() {
 
 	model.Database = db
 	defer db.Close()
+	router := mux.NewRouter()
+	c := cors.New(cors.Options{
+		AllowedOrigins: []string{"http://localhost:8080"},
+		AllowCredentials: true,
+		AllowedMethods: []string{
+			http.MethodGet,//http methods for your app
+			http.MethodPost,
+			http.MethodPut,
+			http.MethodPatch,
+			http.MethodDelete,
+			http.MethodOptions,
+			http.MethodHead,
+		},
+		AllowedHeaders: []string{
+			"*",//or you can your header key values which you are using in your application
 
+		},
+	})
 
-	http.Handle("/register", recoverHandler(http.HandlerFunc(auth.RegistrationHandler)))
-	http.Handle("/login", recoverHandler(http.HandlerFunc(auth.LoginUserHandler)))
-	http.Handle("/verify", recoverHandler(http.HandlerFunc(auth.VerifyHandler)))
-	http.Handle("/", auth.LoginHandler(recoverHandler(http.HandlerFunc(indexHandler))))
+	router.Handle("/register", recoverHandler(http.HandlerFunc(auth.RegistrationHandler)))
+	router.Handle("/login", recoverHandler(http.HandlerFunc(auth.LoginUserHandler)))
+	router.Handle("/verify", recoverHandler(http.HandlerFunc(auth.VerifyHandler)))
+	router.Handle("/", auth.LoginHandler(recoverHandler(http.HandlerFunc(indexHandler))))
+	handler := c.Handler(router)
 	fmt.Println("Server is listening...")
-	http.ListenAndServe(":9000",nil)
+	http.ListenAndServe(":9000",handler)
 
 }

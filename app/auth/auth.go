@@ -98,16 +98,20 @@ func VerifyHandler(w http.ResponseWriter, r *http.Request){
 }
 func RegistrationHandler(w http.ResponseWriter, r *http.Request){
 
+	fmt.Fprintf(w,"suka")
 	if r.Method == "POST" {
-		var user model.User
-		r.ParseForm()
-		user.Login = r.FormValue("login")
-		user.Email = r.FormValue("email")
-		user.Password = r.FormValue("password")
-		user.FirstName = r.FormValue("first_name")
-		user.LastName = r.FormValue("last_name")
-		user.Id = uuid.New().String()
+		//var user model.User
+		fmt.Println("params!",r)
+		user := model.ParseJSON(w,r)
+		//params := r.URL.Query()
 
+		/*user.Login = params.Get("login")
+		user.Email = params.Get("email")
+		user.Password = params.Get("password")
+		user.FirstName = params.Get("first_name")
+		user.LastName = params.Get("last_name")*/
+		user.Id = uuid.New().String()
+		fmt.Println("user!!!!",user)
 
 		tokenS := jwt.NewWithClaims(jwt.SigningMethodRS256,jwt.MapClaims{
 			"email":user.Email,

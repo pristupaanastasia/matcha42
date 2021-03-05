@@ -1,6 +1,6 @@
 <template>
   <div>
-    <form @submit.prevent="checkForm">
+    <form >
       <p v-if="errors.length">
         <b>Пожалуйста исправьте указанные ошибки:</b>
       <ul>
@@ -52,14 +52,14 @@
           name="last_name"
       >
       </p>
-      <input type="button" value="Отправить" onclick="submit()">
+      <button @click='submit()'>Reg</button>
 
     </form>
   </div>
 </template>
 <script>
 
-    const apiUrl = 'https://localhost:9000/register'
+    const apiUrl = 'http://localhost:9000/register'
 
 
     export default {
@@ -72,6 +72,7 @@
             password: null,
             first_name: null,
             last_name: null,
+            arr: [],
           }
         },
 
@@ -105,21 +106,35 @@
 
 
             },
+
           async submit() {
-            let response = await fetch(apiUrl);
-            if (response.ok) {
-              fetch(apiUrl,
-              {
-                method: 'POST',
-                    headers: {
-                      'Content-Type': 'form-data'
-              },
-                body: this.data(),
-                redirect: 'follow'
-              });
-            }else{
-              alert("Ошибка HTTP: " + response.status);
-            }
+            this.arr.push({"login": this.login}, {"email":  this.email},{"password":this.password},{"first_name":this.first_name},{"last_name":this.last_name})
+            await fetch(apiUrl,
+                {
+                  method: "POST",
+                  credentials: "include",
+                  headers: {
+                    'Accept': 'application/json',
+                    'Content-Type': 'application/json'
+                  },
+                  cache: 'no-cache',
+                  redirect: 'follow',
+                  body: JSON.stringify(this.arr)
+                }).then(function(res){
+              if (!res.ok) throw Error(`is not ok: ${res.status}`);
+              //detect json
+              if(res.headers.get("Content-Type").includes("json")){
+                return res.json();
+              }else{
+                return res.text();
+              }
+            }).catch(function(res){
+              //Errors
+              console.log(res);
+              //returned if errors
+              return "Error!";
+            });
+
           }
         },
 

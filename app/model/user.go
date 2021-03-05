@@ -1,6 +1,11 @@
 package model
 
-import "database/sql"
+import (
+	"database/sql"
+	"encoding/json"
+	"log"
+	"net/http"
+)
 
 var Database *sql.DB
 var Server string = "http://localhost:9000"
@@ -13,4 +18,15 @@ type User struct{
 	FirstName string
 	LastName string
 	Verify bool
+}
+
+func ParseJSON(w http.ResponseWriter, r *http.Request) User{
+	var user User
+	decoder := json.NewDecoder(r.Body)
+	decoder.UseNumber()
+	err := decoder.Decode(&user)
+	if err!=nil{
+		log.Fatal(err)
+	}
+	return user
 }

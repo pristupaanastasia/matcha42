@@ -38,3 +38,4 @@ func CreateTokenRefresh(user model.User) (string, error){
 	}
 	return tokenString, nil
 }
+
