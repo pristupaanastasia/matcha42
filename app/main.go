@@ -51,6 +51,7 @@ func main() {
 	model.Database = db
 	defer db.Close()
 
+
 	http.Handle("/register", recoverHandler(http.HandlerFunc(auth.RegistrationHandler)))
 	http.Handle("/login", recoverHandler(http.HandlerFunc(auth.LoginUserHandler)))
 	http.Handle("/verify", recoverHandler(http.HandlerFunc(auth.VerifyHandler)))
