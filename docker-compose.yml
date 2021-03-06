@@ -2,7 +2,7 @@ version: "3.6"
 
 services:
   web:
-    build: .
+    build: ./app
     restart: always
     volumes:
       - ./app:/go/src/app
@@ -26,5 +26,6 @@ services:
       - 5432:5432
     volumes:
       - ./postgres-data/postgres:/var/lib/postgresql/data
+
 networks:
   custom:
