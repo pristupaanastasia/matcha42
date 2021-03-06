@@ -79,37 +79,39 @@ func VerifyHandler(w http.ResponseWriter, r *http.Request){
 		fmt.Println("model.Database.Exec",error)
 		return
 	}
-	tokenRefresh, erno := token.CreateTokenRefresh(user)
+	tokenAccess, erno := token.CreateTokenAccess(user)
 	if erno != nil{
 		w.WriteHeader(http.StatusInternalServerError)
 		fmt.Println("token.CreateTokenRefresh",erno)
 		return
 	}
-
+	tokenRefresh, errno := token.CreateTokenRefresh(user)
+	if errno != nil{
+		w.WriteHeader(http.StatusInternalServerError)
+		fmt.Println("token.CreateTokenRefresh",erno)
+		return
+	}
 	http.SetCookie(w, &http.Cookie{
 		Name:    "token",
+		Value:   tokenAccess,
+		Path:    "/",
+	})
+	http.SetCookie(w, &http.Cookie{
+		Name:    "token_refresh",
 		Value:   tokenRefresh,
 		Path:    "/",
 	})
-
 	w.WriteHeader(http.StatusOK)
-	http.Redirect(w, r, "/login", http.StatusSeeOther)
+	http.Redirect(w, r, model.ServerVue + "login", http.StatusSeeOther)
 
 }
 func RegistrationHandler(w http.ResponseWriter, r *http.Request){
 
-	fmt.Fprintf(w,"suka")
+
 	if r.Method == "POST" {
 		//var user model.User
 		fmt.Println("params!",r)
 		user := model.ParseJSON(w,r)
-		//params := r.URL.Query()
-
-		/*user.Login = params.Get("login")
-		user.Email = params.Get("email")
-		user.Password = params.Get("password")
-		user.FirstName = params.Get("first_name")
-		user.LastName = params.Get("last_name")*/
 		user.Id = uuid.New().String()
 		fmt.Println("user!!!!",user)
 
@@ -126,15 +128,6 @@ func RegistrationHandler(w http.ResponseWriter, r *http.Request){
 		}
 		fmt.Println(tokenString)
 		verifyEmail(tokenString, user.Email,user.Id)
-
-		//ctx := context.WithValue(
-		//	r.Context(), "email", email)
-		//r = r.WithContext(ctx)
-
-		/*http.SetCookie(w, &http.Cookie{
-			Name:    "token",
-			Value:   tokenString,
-		})*/
 
 		fmt.Fprint(w, user.Login, user.Password, user.FirstName, user.LastName,user.Id,"|",len(user.Id),"|")
 		_, err := model.Database.Exec("insert into users (id_user, login, email,password, first_name, last_name,verify) values ($1, $2, $3,$4,$5,$6, false) ",
@@ -156,7 +149,7 @@ func RegistrationHandler(w http.ResponseWriter, r *http.Request){
 
 
 	}else{
-		http.ServeFile(w, r, "auth/view/register.html")
+		http.ServeFile(w, r, model.ServerVue +"register")
 	}
 
 }

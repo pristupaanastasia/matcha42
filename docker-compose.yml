@@ -18,7 +18,7 @@ services:
       DOCKER: "true"
     volumes:
       - .:/go/src/front
-      - /var/www/app/node_modules
+      - .:/var/www/app/node_modules
     restart: always
     links:
       - web

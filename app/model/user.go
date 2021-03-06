@@ -19,6 +19,7 @@ type User struct{
 	LastName string
 	Verify bool
 }
+var ServerVue = "http://localhost:8080/"
 
 func ParseJSON(w http.ResponseWriter, r *http.Request) User{
 	var user User

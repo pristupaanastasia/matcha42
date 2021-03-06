@@ -1,3 +1,4 @@
+
 <template>
   <div>
     <form >
@@ -59,7 +60,7 @@
 </template>
 <script>
 
-    const apiUrl = 'http://localhost:9000/register'
+    const apiUrl = 'http://localhost:9000/api.user.register'
 
 
     export default {
@@ -72,43 +73,50 @@
             password: null,
             first_name: null,
             last_name: null,
-            arr: [],
+            info :null
           }
         },
 
 
         methods: {
-            checkForm: function () {
-                this.errors = [];
-                if (this.email && this.login && this.password && this.first_name && this.last_name) {
+          checkForm: function () {
+            this.errors = [];
+            if (this.email && this.login && this.password && this.first_name && this.last_name) {
 
-                    return true;
-                }
-
-
-                if (!this.email) {
-                    this.errors.push('Требуется указать email.');
-                }else if (!this.validEmail(this.email)) {
-                    this.errors.push('Укажите корректный адрес электронной почты.');
-                }
-                if (!this.password) {
-                    this.errors.push('Требуется указать пароль.');
-                }
-                if (!this.first_name) {
-                    this.errors.push('Требуется указать имя.');
-                }
-                if (!this.last_name) {
-                    this.errors.push('Требуется указать фамилия.');
-                }
-                if (!this.login) {
-                    this.errors.push('Требуется указать логин.');
-                }
+              return true;
+            }
 
 
-            },
+            if (!this.email) {
+              this.errors.push('Требуется указать email.');
+            } else if (!this.validEmail(this.email)) {
+              this.errors.push('Укажите корректный адрес электронной почты.');
+            }
+            if (!this.password) {
+              this.errors.push('Требуется указать пароль.');
+            }
+            if (!this.first_name) {
+              this.errors.push('Требуется указать имя.');
+            }
+            if (!this.last_name) {
+              this.errors.push('Требуется указать фамилия.');
+            }
+            if (!this.login) {
+              this.errors.push('Требуется указать логин.');
+            }
+
+
+          },
 
           async submit() {
-            this.arr.push({"login": this.login}, {"email":  this.email},{"password":this.password},{"first_name":this.first_name},{"last_name":this.last_name})
+            let s = {
+              "login": this.login,
+              "email": this.email,
+              "password": this.password,
+              "first_name": this.first_name,
+              "last_name": this.last_name,
+            }
+
             await fetch(apiUrl,
                 {
                   method: "POST",
@@ -119,24 +127,24 @@
                   },
                   cache: 'no-cache',
                   redirect: 'follow',
-                  body: JSON.stringify(this.arr)
-                }).then(function(res){
+                  body: JSON.stringify(s)
+                }).then(function (res) {
               if (!res.ok) throw Error(`is not ok: ${res.status}`);
               //detect json
-              if(res.headers.get("Content-Type").includes("json")){
+              if (res.headers.get("Content-Type").includes("json")) {
                 return res.json();
-              }else{
+              } else {
                 return res.text();
               }
-            }).catch(function(res){
+            }).catch(function (res) {
               //Errors
               console.log(res);
               //returned if errors
               return "Error!";
             });
 
-          }
-        },
+          },
+        }
 
 
     };

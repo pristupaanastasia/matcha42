@@ -1,9 +1,9 @@
 package auth
 
 import (
-	"github.com/pristupaanastasia/matcha42/app/model"
 	"crypto/tls"
 	"fmt"
+	"github.com/pristupaanastasia/matcha42/app/model"
 	"log"
 	"net/smtp"
 )
@@ -13,6 +13,7 @@ type Mail struct {
 	subject  string
 	body     string
 }
+
 
 func verifyEmail(token string,email string,id string){
 	// Set up authentication information.
@@ -34,7 +35,7 @@ func verifyEmail(token string,email string,id string){
 	mail.toIds = email
 	fmt.Println("mail!!!!!" , mail.toIds)
 	mail.subject = "This is the email subject"
-	mail.body = " "+ model.Server +"/verify?token=" + token +  "&id=" + id + " "
+	mail.body = " "+ model.Server +"/api.user.verify?token=" + token +  "&id=" + id + " "
 	fmt.Println(mail.body)
 	messageBody := mail.BuildMessage()
 	fmt.Println(messageBody)

@@ -5,10 +5,13 @@ WORKDIR /app
 COPY package*.json ./
 
 
+
 RUN npm install
 
 
+
 COPY . .
+RUN npm install --save axios vuex
 
 
 # Add main node execution command
