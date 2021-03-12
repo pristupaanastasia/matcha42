@@ -4,6 +4,7 @@
       <h1>Matcha (or whatever)</h1>
       <router-link to="/">Home</router-link> |
       <router-link to="/register">Register</router-link>
+      <router-link to="/login">Login</router-link>
     </div>
     <hr>
     <router-view/>

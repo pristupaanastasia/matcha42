@@ -63,15 +63,15 @@ func LoginUserHandler(w http.ResponseWriter,r *http.Request){
 		user.Email = r.FormValue("email")
 		user.Password = r.FormValue("password")
 		if !isAuthenticated(w,r) {
-			http.Redirect(w, r, "/login", http.StatusUnauthorized)
+			http.Redirect(w, r, model.ServerVue +"login", http.StatusUnauthorized)
 			return
 		}
 		//w.WriteHeader(http.StatusOK)
-		http.Redirect(w, r,  "/", http.StatusSeeOther)
+		http.Redirect(w, r,  model.ServerVue+"profile", http.StatusSeeOther)
 
 
 
 	}else{
-		http.ServeFile(w, r, "auth/view/auth.html")
+		http.ServeFile(w, r, model.ServerVue +"login")
 	}
 }

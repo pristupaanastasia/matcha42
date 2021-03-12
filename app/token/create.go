@@ -22,7 +22,9 @@ type Claims struct {
 }
 var PrivateKey    *rsa.PrivateKey
 var PublicKey    *rsa.PublicKey
-func CreateTokenRefresh(user model.User) (string, error){
+var PrivateKeyR    *rsa.PrivateKey
+var PublicKeyR    *rsa.PublicKey
+func CreateTokenAccess(user model.User) (string, error){
 
 
 
@@ -38,3 +40,20 @@ func CreateTokenRefresh(user model.User) (string, error){
 	}
 	return tokenString, nil
 }
+func CreateTokenRefresh(user model.User) (string, error){
+
+
+
+	token := jwt.NewWithClaims(jwt.SigningMethodRS256,jwt.MapClaims{
+		"login":user.Login,
+		"exp":time.Now().Add(time.Minute).Unix(),
+	})
+
+	tokenString, erro:= token.SignedString(PrivateKey)
+	if erro != nil {
+
+		return "",erro
+	}
+	return tokenString, nil
+}
+
