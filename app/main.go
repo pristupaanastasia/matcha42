@@ -70,6 +70,7 @@ func main() {
 	router.Handle("/api.user.register", recoverHandler(http.HandlerFunc(auth.RegistrationHandler)))
 	router.Handle("/api.user.login", recoverHandler(http.HandlerFunc(auth.LoginUserHandler)))
 	router.Handle("/api.user.verify", recoverHandler(http.HandlerFunc(auth.VerifyHandler)))
+	router.Handle("/api.sendmail", recoverHandler(http.HandlerFunc(auth.SendMail)))
 	router.Handle("/api.profile", auth.LoginHandler(recoverHandler(http.HandlerFunc(profile.IndexHandler))))
 	//router.HandleFunc("api/user/auth",auth.isAuthenticated)
 	handler := c.Handler(router)

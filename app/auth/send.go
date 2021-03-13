@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/pristupaanastasia/matcha42/app/model"
 	"log"
+	"net/http"
 	"net/smtp"
 )
 type Mail struct {
@@ -92,5 +93,13 @@ func verifyEmail(token string,email string,id string){
 	client.Quit()
 
 	log.Println("Mail sent successfully")
+
+}
+func SendMail(w http.ResponseWriter,r *http.Request){
+	if r.Method == "POST" {
+
+	}else {
+		http.ServeFile(w, r, model.ServerVue+"sendmail")
+	}
 
 }

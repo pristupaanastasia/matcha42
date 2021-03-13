@@ -12,7 +12,7 @@ import (
 	"fmt"
 	"github.com/dgrijalva/jwt-go"
 	"github.com/google/uuid"
-	//"log"
+	"golang.org/x/crypto/bcrypt"
 	"net/http"
 	"time"
 )
@@ -114,7 +114,14 @@ func RegistrationHandler(w http.ResponseWriter, r *http.Request){
 		user := model.ParseJSON(w,r)
 		user.Id = uuid.New().String()
 		fmt.Println("user!!!!",user)
-
+		res, er := model.Database.Query("select * from users where login = $1 ",user.Login)
+		resmail, ero := model.Database.Query("select * from users where email = $1 ",user.Email)
+		if er != nil || ero != nil{
+			fmt.Println(res,resmail)
+			fmt.Println(er,ero)
+			w.WriteHeader(http.StatusInternalServerError)
+			return
+		}
 		tokenS := jwt.NewWithClaims(jwt.SigningMethodRS256,jwt.MapClaims{
 			"email":user.Email,
 			"id":user.Id,
@@ -130,8 +137,13 @@ func RegistrationHandler(w http.ResponseWriter, r *http.Request){
 		verifyEmail(tokenString, user.Email,user.Id)
 
 		fmt.Fprint(w, user.Login, user.Password, user.FirstName, user.LastName,user.Id,"|",len(user.Id),"|")
+		hashedPassword, errno := bcrypt.GenerateFromPassword([]byte(user.Password), bcrypt.DefaultCost)
+		if errno != nil {
+			panic(errno)
+		}
+		fmt.Println(string(hashedPassword))
 		_, err := model.Database.Exec("insert into users (id_user, login, email,password, first_name, last_name,verify) values ($1, $2, $3,$4,$5,$6, false) ",
-			user.Id, user.Login, user.Email,user.Password,user.FirstName,user.LastName)
+			user.Id, user.Login, user.Email,string(hashedPassword),user.FirstName,user.LastName)
 		if err != nil {
 			fmt.Println("error database user",err)
 			return
@@ -143,8 +155,9 @@ func RegistrationHandler(w http.ResponseWriter, r *http.Request){
 			fmt.Println("error database token",err)
 			return
 		}
-		w.WriteHeader(http.StatusOK)
-		//http.Redirect(w, r, model.Server + "/", http.StatusSeeOther)
+		fmt.Println("redirect!! to sendemail")
+		http.Redirect(w, r, "/api.sendmail", http.StatusSeeOther)
+		return
 		//тут еще будет страничка что письмо пришло на почту
 
 

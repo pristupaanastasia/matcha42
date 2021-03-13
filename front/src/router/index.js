@@ -3,6 +3,7 @@ import Home from '../views/Home.vue'
 import Login from '../views/Login.vue'
 import Register from '../views/Register.vue'
 import Profile from '../views/Profile.vue'
+import Sendmail from '../views/Sendmail.vue';
 
 const routes = [
     {
@@ -11,7 +12,7 @@ const routes = [
       component: Home
     },
     {
-      path: "/prodile",
+      path: "/profile",
       name: "Profile",
       component: Profile,
 
@@ -26,6 +27,12 @@ const routes = [
       path: "/register",
       name: "Register",
       component: Register,
+
+    },
+    {
+        path: "/sendmail",
+        name: "Sendmail",
+        component: Sendmail,
 
     }
     ];

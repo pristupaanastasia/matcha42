@@ -1,7 +1,7 @@
 <template>
   <div>
-    <h2>Home page</h2>
+    <h2>табор любви</h2>
 
-    <p>Dating site pwswswpspwsppasedfasd</p>
+
   </div>
 </template>
